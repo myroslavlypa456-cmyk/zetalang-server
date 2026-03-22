@@ -6,44 +6,27 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-app.use(express.json());
 app.use(express.static("public"));
 
-let users = {};
+let users = [];
 
 io.on("connection", (socket) => {
-    console.log("User connected:", socket.id);
+  console.log("user connected");
 
-    // вход пользователя
-    socket.on("join", (username) => {
-        users[socket.id] = username;
-        io.emit("online", Object.values(users));
-    });
+  socket.on("join", (name) => {
+    users.push({ id: socket.id, name });
+    io.emit("users", users);
+  });
 
-    // чат
-    socket.on("chat", (msg) => {
-        io.emit("chat", {
-            user: users[socket.id],
-            message: msg
-        });
-    });
+  socket.on("message", (msg) => {
+    io.emit("message", msg);
+  });
 
-    // выполнение кода
-    socket.on("run_code", (code) => {
-        try {
-            const result = require("./zetalang")(code);
-            socket.emit("output", result);
-        } catch (e) {
-            socket.emit("output", "ERROR: " + e.message);
-        }
-    });
-
-    socket.on("disconnect", () => {
-        delete users[socket.id];
-        io.emit("online", Object.values(users));
-    });
+  socket.on("disconnect", () => {
+    users = users.filter(u => u.id !== socket.id);
+    io.emit("users", users);
+  });
 });
 
-server.listen(3000, () => {
-    console.log("Server running on port 3000");
-});
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => console.log("Server started"));

@@ -1,79 +1,11 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>ZetaLang</title>
-<style>
-body { margin:0; background:#1e1e1e; color:white; font-family:sans-serif; display:flex; }
-#sidebar { width:200px; background:#2c2c2c; padding:10px; }
-#main { flex:1; display:flex; flex-direction:column; }
-#chat { flex:1; overflow:auto; padding:10px; }
-#input { display:flex; }
-input { flex:1; }
-canvas { background:black; }
-</style>
-</head>
-<body>
+<hr>
 
-<div id="sidebar">
-  👥 Онлайн: <span id="online">0</span>
-  <div id="users"></div>
+<h3>💬 Chat</h3>
+<div id="chat" style="height:200px; overflow:auto; border:1px solid #333;"></div>
+<input id="msg" placeholder="message..." style="width:100%;">
 
-  <hr>
-
-  <h3>🎮 Clicker</h3>
-  <button onclick="score++">+1</button>
-  <div id="score">0</div>
-
-  <h3>🐍 Snake</h3>
-  <canvas id="snake" width="150" height="150"></canvas>
-</div>
-
-<div id="main">
-  <div id="chat"></div>
-  <div id="input">
-    <input id="msg">
-    <button onclick="send()">Send</button>
-  </div>
-</div>
+<h3>👥 Online</h3>
+<div id="users"></div>
 
 <script src="/socket.io/socket.io.js"></script>
-<script>
-const socket = io();
-let username = prompt("нік") || "Guest";
-socket.emit("join", username);
-
-// чат
-function send() {
-  socket.emit("message", msg.value);
-  msg.value = "";
-}
-
-socket.on("message", m => {
-  chat.innerHTML += "<div>"+m+"</div>";
-});
-
-socket.on("online", c => online.innerText = c);
-
-socket.on("users", list => {
-  users.innerHTML = list.map(u => "<div>"+u+"</div>").join("");
-});
-
-// clicker
-let score = 0;
-setInterval(()=>scoreEl(),500);
-function scoreEl(){document.getElementById("score").innerText=score}
-
-// snake (простий)
-let c = document.getElementById("snake");
-let ctx = c.getContext("2d");
-let x=10,y=10;
-setInterval(()=>{
-  ctx.fillStyle="black"; ctx.fillRect(0,0,150,150);
-  ctx.fillStyle="lime"; ctx.fillRect(x,y,10,10);
-  x+=10; if(x>150)x=0;
-},200);
-</script>
-
-</body>
-</html>
+<script src="client.js"></script>

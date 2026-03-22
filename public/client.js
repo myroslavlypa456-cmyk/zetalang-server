@@ -1,48 +1,24 @@
 const socket = io();
 
-let username = prompt("Your name?");
-socket.emit("join", username);
+let name = prompt("Ник?");
+socket.emit("join", name);
 
-const codeEl = document.getElementById("code");
-const output = document.getElementById("output");
-const messages = document.getElementById("messages");
-const usersEl = document.getElementById("users");
+const chat = document.getElementById("chat");
+const input = document.getElementById("msg");
+const usersDiv = document.getElementById("users");
 
-// сохранение
-codeEl.value = localStorage.getItem("code") || "";
-codeEl.oninput = () => {
-    localStorage.setItem("code", codeEl.value);
-};
-
-// запуск
-function run() {
-    socket.emit("run_code", codeEl.value);
-}
-
-function clearOutput() {
-    output.innerText = "";
-}
-
-socket.on("output", (data) => {
-    output.innerText += data + "\n";
+input.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    socket.emit("message", name + ": " + input.value);
+    input.value = "";
+  }
 });
 
-// чат
-document.getElementById("msgInput").addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-        socket.emit("chat", e.target.value);
-        e.target.value = "";
-    }
+socket.on("message", (msg) => {
+  chat.innerHTML += `<div>${msg}</div>`;
+  chat.scrollTop = chat.scrollHeight;
 });
 
-socket.on("chat", (data) => {
-    messages.innerHTML += `<div><b>${data.user}:</b> ${data.message}</div>`;
-});
-
-// онлайн
-socket.on("online", (list) => {
-    usersEl.innerHTML = "";
-    list.forEach(u => {
-        usersEl.innerHTML += `<li>${u}</li>`;
-    });
+socket.on("users", (users) => {
+  usersDiv.innerHTML = users.map(u => "🟢 " + u.name).join("<br>");
 });
